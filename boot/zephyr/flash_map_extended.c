@@ -23,7 +23,16 @@ BOOT_LOG_MODULE_DECLARE(mcuboot);
 #if defined(CONFIG_STM32_MEMMAP)
 /* MEMORY MAPPED for XiP on external NOR flash takes the sspi-nor or ospi-nor or qspi-nor device */
 #define FLASH_DEVICE_ID SPI_FLASH_0_ID
-#if DT_NODE_HAS_STATUS(DT_INST(0, st_stm32_xspi_nor), okay)
+#if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_xspi_nor) && DT_HAS_COMPAT_STATUS_OKAY(st_stm32_xspim)
+#define DT_DRV_COMPAT st_stm32_xspi_nor
+#define FLASH_DEVICE_NODE DT_CHOSEN(zephyr_flash_controller)
+/* Flash device base used is the one from the memory mapped device
+ * This is required for flash reads that are memory mapped based
+ * while writes and erases are commands based through the flash controller
+ * using NOR device address (offsets).
+ */
+#define FLASH_DEVICE_BASE CONFIG_FLASH_BASE_ADDRESS
+#elif DT_NODE_HAS_STATUS(DT_INST(0, st_stm32_xspi_nor), okay)
 #define DT_DRV_COMPAT st_stm32_xspi_nor
 #define FLASH_DEVICE_NODE DT_INST(0, st_stm32_xspi_nor)
 #define FLASH_DEVICE_BASE DT_REG_ADDR_BY_IDX(DT_INST_PARENT(0), 1)
